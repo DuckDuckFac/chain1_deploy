@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>마이페이지</title>
+</head>
+<body>
+  <h2>🦆 {{ user.nickname }} 님의 마이페이지</h2>
+
+  <!-- MY 금융정보 -->
+  <section>
+    <h3>MY 금융정보</h3>
+    {% if profile %}
+      <p>생년월일: {{ profile.birth_date }}</p>
+      <p>성별: {{ profile.get_gender_display }}</p>
+      <p>자산: {{ profile.get_asset_display }}</p>
+      <p>연봉: {{ profile.get_income_display }}</p>
+      <p>직업: {{ profile.get_job_display }}</p>
+    {% else %}
+      <p>아직 금융 정보를 입력하지 않았어요.</p>
+    {% endif %}
+  </section>
+
+  <!-- MY 상품 -->
+  <section>
+    <h3>MY 상품</h3>
+    <p>둥지가 비어있어요</p>
+  </section>
+
+  <!-- MY 종목 -->
+  <section>
+    <h3>MY 종목</h3>
+    <p>둥지가 비어있어요</p>
+  </section>
+</body>
+</html>

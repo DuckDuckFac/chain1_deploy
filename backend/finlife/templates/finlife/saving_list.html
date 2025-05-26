@@ -1,0 +1,8 @@
+<h1>적금 상품 목록</h1>
+<ul>
+  {% for p in products %}
+    <li>
+      <strong>{{ p.fin_prdt_nm }}</strong> - {{ p.kor_co_nm }}
+    </li>
+  {% endfor %}
+</ul>

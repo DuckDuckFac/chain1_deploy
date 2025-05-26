@@ -1,0 +1,84 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>커뮤니티</title>
+</head>
+<body>
+
+<div style="display: flex;">
+  <!-- ✅ 왼쪽 사이드바 -->
+  <aside style="width: 250px;">
+    <div>
+      <img src="{% static 'images/default_profile.png' %}" width="80">
+      <p>{{ user.nickname }} 님의 활동</p>
+      <div>
+
+  
+  <p>
+    <span style="cursor: pointer;" onclick="openModal('myPostsModal')" title="내가 쓴 글">📝</span>
+    {{ user.community_set.count }} 작성
+  </p>
+
+  <p>
+    <span style="cursor: pointer;" onclick="openModal('likedPostsModal')" title="좋아요한 글">❤️</span>
+    {{ user.like_communities.count }} 좋아요
+  </p>
+</div>
+  <a href="{% url 'community:create' %}">글쓰기</a>
+    </div>
+  </aside>
+
+  <!-- ✅ 오른쪽 게시글 리스트 -->
+ <main style="flex: 1; padding-left: 30px;">
+
+  {% for c in community %}
+    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+      <h2>{{ c.title }}</h2>
+      <p>{{ c.content|truncatewords:20 }}</p>
+      <p>❤️ {{ c.like_users.count }}</p>
+      <a href="{% url 'community:detail' c.pk %}">자세히 보기</a>
+    </div>
+  {% endfor %}
+</main>
+</div>
+
+<!-- ✅ 내가 쓴 글 모달 -->
+<div id="myPostsModal" class="modal" style="display:none; position:fixed; top:20%; left:35%; background:white; border:1px solid #ccc; padding:20px;">
+  <h3>내가 쓴 글</h3>
+  <ul>
+    {% for post in user_posts %}
+      <li><a href="{% url 'community:detail' post.pk %}">{{ post.title }}</a></li>
+    {% empty %}
+      <li>작성한 글이 없습니다.</li>
+    {% endfor %}
+  </ul>
+  <button onclick="closeModal('myPostsModal')">닫기</button>
+</div>
+
+<!-- ✅ 좋아요한 글 모달 -->
+<div id="likedPostsModal" class="modal" style="display:none; position:fixed; top:20%; left:35%; background:white; border:1px solid #ccc; padding:20px;">
+  <h3>좋아요한 글</h3>
+  <ul>
+    {% for post in liked_posts %}
+      <li><a href="{% url 'community:detail' post.pk %}">{{ post.title }}</a></li>
+    {% empty %}
+      <li>좋아요한 글이 없습니다.</li>
+    {% endfor %}
+  </ul>
+  <button onclick="closeModal('likedPostsModal')">닫기</button>
+</div>
+
+<!-- ✅ 모달 스크립트 -->
+<script>
+function openModal(id) {
+  document.getElementById(id).style.display = 'block';
+}
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+</script>
+
+</body>
+</html>

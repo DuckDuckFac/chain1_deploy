@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>은행 찾기</title>
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    .header {
+      background-color: #f36f21;
+      color: white;
+      padding: 10px 20px;
+      font-size: 20px;
+    }
+    .container { display: flex; height: calc(100vh - 50px); }
+    .sidebar {
+      width: 300px; padding: 20px; background-color: #f9f9f9;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+    .sidebar select, .sidebar button {
+      width: 100%; padding: 10px; margin-bottom: 15px; font-size: 14px;
+    }
+    .sidebar button {
+      background-color: #f36f21; color: white; border: none; cursor: pointer;
+    }
+    #map { flex-grow: 1; height: 100%; }
+  </style>
+<script src="{% static 'js/apikey.js' %}"></script>
+  <script>
+    const script = document.createElement('script');
+    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${window.config.apiKey}&autoload=false&libraries=services`;
+    script.onload = function () {
+      kakao.maps.load(initMap);
+    };
+    document.head.appendChild(script);
+  </script>
+</head>
+<body>
+
+<div class="header">은행 찾기</div>
+<div id="search-msg" style="display:none; padding:10px; background:#fff3cd; color:#856404; font-size:14px; border-top:1px solid #ffeeba; border-bottom:1px solid #ffeeba;">
+  🔍 출력된 마커를 클릭하면 역삼 멀티캠퍼스로부터 경로가 출력됩니다.
+</div>
+
+<div class="container">
+  <div class="sidebar">
+    <label>광역시 / 도</label>
+    <select id="sido-select"><option value="">광역시 / 도 선택</option></select>
+    <label>시 / 군 / 구</label>
+    <select id="sigungu-select"><option value="">시 / 군 / 구 선택</option></select>
+    <label>은행</label>
+    <select id="bank-select"><option value="">은행 선택</option></select>
+    <button onclick="searchBank()">찾기</button>
+  </div>
+  <div id="map"></div>
+</div>
+
+<script>
+  console.log(window.config.apiKey);      // undefined면 문제 있음
+console.log(window.config.restApiKey);  // 이것도 마찬가지
+console.log(window.config.apiKey)
+let map;
+let infowindow;
+let polyline = null;
+let markers = [];
+let mapData = {};
+let originMarker, originInfo;
+
+function initMap() {
+  map = new kakao.maps.Map(document.getElementById('map'), {
+    center: new kakao.maps.LatLng(37.49818, 127.027386),
+    level: 3
+  });
+
+  infowindow = new kakao.maps.InfoWindow({ zIndex: 1 });
+
+  const originLat = 37.501274;
+  const originLng = 127.039585;
+  const originPosition = new kakao.maps.LatLng(originLat, originLng);
+  originMarker = new kakao.maps.Marker({ map: map, position: originPosition });
+  originInfo = new kakao.maps.InfoWindow({
+    content: '<div style="padding:5px;font-size:13px;">역삼 멀티캠퍼스 (출발지)</div>',
+    position: originPosition,
+    removable: false
+  });
+
+  initSelectors();
+}
+
+function searchBank() {
+  const sido = document.getElementById("sido-select").value;
+  const sigungu = document.getElementById("sigungu-select").value;
+  const bank = document.getElementById("bank-select").value;
+  if (!sido || !sigungu || !bank) return alert("모든 항목을 선택해주세요.");
+  document.getElementById("search-msg").style.display = "block";
+
+  const keyword = `${sido} ${sigungu} ${bank}`;
+  const ps = new kakao.maps.services.Places();
+
+  markers.forEach(m => m.setMap(null));
+  markers = [];
+  infowindow.close();
+  if (polyline) polyline.setMap(null);
+
+  ps.keywordSearch(keyword, function (data, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      const bounds = new kakao.maps.LatLngBounds();
+
+      data.forEach(place => {
+        const position = new kakao.maps.LatLng(place.y, place.x);
+        const marker = new kakao.maps.Marker({ position, map });
+        markers.push(marker);
+        bounds.extend(position);
+
+        kakao.maps.event.addListener(marker, 'click', function() {
+          document.getElementById("search-msg").style.display = "none";
+
+          const content = `<div style="padding:5px;font-size:13px;">${place.place_name}</div>`;
+          infowindow.setContent(content);
+          infowindow.setPosition(position);
+          infowindow.setMap(map);
+
+          originInfo.open(map, originMarker);
+
+          const origin = '127.039585,37.501274';
+          const destination = `${place.x},${place.y}`;
+
+          fetch(`https://apis-navi.kakaomobility.com/v1/directions?origin=${origin}&destination=${destination}&priority=RECOMMEND`, {
+            method: 'GET',
+            headers: {
+  					'Authorization': `KakaoAK ${window.config.restApiKey}`
+            }
+          })
+          .then(res => res.json())
+          .then(result => {
+            const coords = result.routes[0].sections[0].roads.flatMap(r => r.vertexes);
+            const path = [];
+            for (let i = 0; i < coords.length; i += 2) {
+              path.push(new kakao.maps.LatLng(coords[i + 1], coords[i]));
+            }
+
+            if (polyline) polyline.setMap(null);
+            polyline = new kakao.maps.Polyline({
+              path: path,
+              strokeWeight: 5,
+              strokeColor: '#007bff',
+              strokeOpacity: 0.8,
+              strokeStyle: 'solid'
+            });
+            polyline.setMap(map);
+          });
+        });
+      });
+
+      map.setBounds(bounds);
+    } else {
+      alert("검색 결과가 없습니다.");
+    }
+  });
+}
+
+function initSelectors() {
+fetch("{% static 'data/data.json' %}")
+    .then(res => res.json())
+    .then(data => {
+      mapData = data;
+      const sidoSel = document.getElementById("sido-select");
+      const sigunguSel = document.getElementById("sigungu-select");
+      const bankSel = document.getElementById("bank-select");
+
+      data.mapInfo.forEach(region => {
+        const opt = document.createElement("option");
+        opt.value = opt.textContent = region.name;
+        sidoSel.appendChild(opt);
+      });
+
+      sidoSel.addEventListener("change", () => {
+        sigunguSel.innerHTML = '<option value="">시 / 군 / 구 선택</option>';
+        const selected = data.mapInfo.find(r => r.name === sidoSel.value);
+        selected?.countries.forEach(sigungu => {
+          const opt = document.createElement("option");
+          opt.value = opt.textContent = sigungu;
+          sigunguSel.appendChild(opt);
+        });
+      });
+
+      data.bankInfo.forEach(bank => {
+        const opt = document.createElement("option");
+        opt.value = opt.textContent = bank;
+        bankSel.appendChild(opt);
+      });
+    });
+}
+</script>
+</body>
+</html>

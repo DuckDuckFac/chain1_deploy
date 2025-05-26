@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>정보 입력 슬라이드</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; overflow: hidden; }
+
+    .slider {
+      display: flex;
+      width: 200vw;
+      height: 100vh;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .slide {
+      width: 100vw;
+      padding: 40px;
+      flex-shrink: 0;
+    }
+
+    .form-section {
+      margin-bottom: 20px;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <form id="profileForm" method="POST" class="form-container">
+    {% csrf_token %}
+    <div class="slider" id="slider">
+
+      <!-- 슬라이드 1: 기본 정보 입력 -->
+      <div class="slide">
+        <h2>맞춤 정보 제공을 위해 입력해주세요</h2>
+        <div class="form-section">
+          <label>생년월일:</label><br>
+          {{ form.birth_date }}
+        </div>
+        <div class="form-section">
+          <label>성별:</label><br>
+          {{ form.gender }}
+        </div>
+        <div class="form-section">
+          <label>자산:</label><br>
+          {{ form.asset }}
+        </div>
+        <div class="form-section">
+          <label>연봉:</label><br>
+          {{ form.income }}
+        </div>
+        <div class="form-section">
+          <label>직업:</label><br>
+          {{ form.job }}
+        </div>
+        <button type="button" id="nextBtn">다음</button>
+      </div>
+
+      <!-- 슬라이드 2: 관심분야 선택 + 완료 -->
+      <div class="slide">
+        <h2>관심 있는 분야를 선택하세요</h2>
+        <div class="form-section">
+          <label><input type="checkbox" name="interests" value="주택청약"> 주택청약</label><br>
+          <label><input type="checkbox" name="interests" value="주식"> 주식</label><br>
+          <label><input type="checkbox" name="interests" value="적금"> 적금</label><br>
+          <label><input type="checkbox" name="interests" value="예금"> 예금</label><br>
+        </div>
+        <button type="submit">완료</button>
+      </div>
+
+    </div>
+  </form>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const nextBtn = document.getElementById('nextBtn');
+      const slider = document.getElementById('slider');
+
+      nextBtn.addEventListener('click', () => {
+        slider.style.transform = 'translateX(-100vw)';
+      });
+    });
+  </script>
+</body>
+</html>

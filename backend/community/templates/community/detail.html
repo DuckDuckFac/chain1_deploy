@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>글 상세 보기</title>
+</head>
+<body>
+  <h1>{{ community.title }}</h1>
+  <div>
+    작성자: {{ community.user.nickname }} | 작성일: {{ community.created_at|date:"Y-m-d H:i" }}
+  </div>
+
+  <div>
+    {{ community.content|linebreaks }}
+  </div>
+<form action="{% url 'community:likes' community.pk %}" method="POST" style="display:inline;">
+  {% csrf_token %}
+  <button type="submit">
+    {% if request.user in community.like_users.all %}
+      ❤️
+    {% else %}
+      🤍
+    {% endif %}
+    ({{ community.like_users.count }})
+  </button>
+</form>
+  <div>
+    <a href="{% url 'community:update' community.pk %}">수정</a>
+    <a href="{% url 'community:delete' community.pk %}">삭제</a>
+    <a href="{% url 'community:index' %}">목록으로</a>
+  </div>
+
+  <hr>
+  <h3>댓글</h3>
+
+  <!-- 댓글 목록 -->
+  <div>
+    {% for comment in comments %}
+      <div id="comment-{{ comment.pk }}">
+        <div class="view-mode">
+          <p>{{ comment.content }}</p>
+         <small>
+          작성자: {{ comment.user.nickname }} |
+{% with time=comment.created_at|timesince %}
+  {% if time == "0 minutes" or time == "0분" %}
+    방금 전
+  {% else %}
+    {{ time }} 전
+  {% endif %}
+{% endwith %}
+          {% if comment.created_at != comment.updated_at %}(수정됨){% endif %}
+</small>
+          {% if comment.user == request.user %}
+            <button onclick="enableEdit({{ comment.pk }})">수정</button>
+            <form method="POST" action="{% url 'community:comments_delete' community.pk comment.pk %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit">삭제</button>
+            </form>
+          {% endif %}
+        </div>
+
+        {% if comment.user == request.user %}
+        <div class="edit-mode" style="display:none;">
+          <form method="POST" action="{% url 'community:comments_update' community.pk comment.pk %}">
+            {% csrf_token %}
+            <textarea name="content" rows="2">{{ comment.content }}</textarea>
+            <button type="submit">완료</button>
+            <button type="button" onclick="cancelEdit({{ comment.pk }})">취소</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- 댓글 작성 -->
+  <form method="POST" action="{% url 'community:comments_create' community.pk %}">
+    {% csrf_token %}
+    {{ comment_form.as_p }}
+    <button type="submit">댓글 작성</button>
+  </form>
+
+  <script>
+    function enableEdit(pk) {
+      const wrapper = document.getElementById(`comment-${pk}`);
+      wrapper.querySelector('.view-mode').style.display = 'none';
+      wrapper.querySelector('.edit-mode').style.display = 'block';
+    }
+
+    function cancelEdit(pk) {
+      const wrapper = document.getElementById(`comment-${pk}`);
+      wrapper.querySelector('.view-mode').style.display = 'block';
+      wrapper.querySelector('.edit-mode').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

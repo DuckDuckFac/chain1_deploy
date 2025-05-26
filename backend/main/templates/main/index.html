@@ -1,0 +1,140 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>골든에그 메인</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+    }
+
+    .video-background {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .video-background video {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .video-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 36px;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    {% comment %} 블록들 CSS {% endcomment %}
+    .feature-section {
+        width: 90%;
+        margin: 100px auto;
+      }
+      
+      .card-row {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-bottom: 50px;
+      }
+      
+      .feature-card {
+        width: 400px;
+        height: 400px;
+        padding: 32px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        background-color: white;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
+        text-align: center;
+        box-sizing: border-box;
+      
+        opacity: 0;
+        transform: translateY(60px);
+        transition: all 0.8s ease;
+      }
+      
+      .feature-card.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      
+      .feature-card.down {
+        margin-top: 30px;
+      }
+  </style>
+</head>
+<body>
+
+  <div class="video-background">
+    <video autoplay muted loop playsinline>
+      <source src="{% static 'videos/main.mp4' %}" type="video/mp4">
+    </video>
+    <div class="video-overlay">
+      골든에그에 오신 걸 환영합니다
+    </div>
+  </div>
+
+  <section class="feature-section">
+    <div class="card-row">
+      <div class="feature-card hidden">
+        <h3>다양한 예금 - 적금을 만나보세요</h3>
+        <p>내 자산에 맞는 예금 적금 찾기</p>
+        <div class="image-placeholder">그림</div>
+      </div>
+  
+      <div class="feature-card hidden down">
+        <h3>커뮤니티에서 정보를 얻으세요1</h3>
+        <p>내 생각 나누기</p>
+        <div class="image-placeholder">그림</div>
+      </div>
+    </div>
+  
+    <div class="card-row">
+      <div class="feature-card hidden">
+        <h3>커뮤니티에서 정보를 얻으세요2</h3>
+        <p>내 생각 나누기</p>
+        <div class="image-placeholder">그림</div>
+      </div>
+  
+      <div class="feature-card hidden down">
+        <h3>커뮤니티에서 정보를 얻으세요3</h3>
+        <p>내 생각 나누기</p>
+        <div class="image-placeholder">그림</div>
+      </div>
+    </div>
+  </section>
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('show');
+            entry.target.classList.remove('hidden');
+          } else {
+            entry.target.classList.remove('show');
+            entry.target.classList.add('hidden');
+          }
+        });
+      }, { threshold: 0.2 });
+      
+      document.querySelectorAll('.feature-card').forEach(el => {
+        observer.observe(el);
+      });
+  </script>
+  </script>
+  
+</body>
+</html>

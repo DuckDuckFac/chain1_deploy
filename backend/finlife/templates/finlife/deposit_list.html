@@ -1,0 +1,6 @@
+<h1>정기예금 상품 목록</h1>
+<ul>
+  {% for product in products %}
+    <li>{{ product.kor_co_nm }} - {{ product.fin_prdt_nm }}</li>
+  {% endfor %}
+</ul>
