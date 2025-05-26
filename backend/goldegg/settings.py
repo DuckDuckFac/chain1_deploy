@@ -155,6 +155,7 @@ AUTH_USER_MODEL = 'accounts.User'
 # CORS_ALLOW_ALL_ORIGINS = True <--이거 주석처리좀 할게
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite 개발 서버 주소
+    "https://nest-invest-app.web.app",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
